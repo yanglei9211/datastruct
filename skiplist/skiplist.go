@@ -1,6 +1,7 @@
 package skiplist
 
 import (
+	"fmt"
 	"math/rand"
 	"time"
 )
@@ -123,6 +124,47 @@ func (s *Skiplist) Insert(score float64, obj *Data) *SkiplistNode {
 	return x
 }
 
+func (s *Skiplist) DeleteNode(x *SkiplistNode, update []*SkiplistNode) {
+	for i := 0; i < s.Level; i++ {
+		if update[i].Level[i].Forward == x {
+			update[i].Level[i].Span += x.Level[i].Span - 1
+			update[i].Level[i].Forward = x.Level[i].Forward
+		} else {
+			update[i].Level[i].Span -= 1
+		}
+	}
+	if x.Level[0].Forward != nil {
+		x.Level[0].Forward.Backward = x.Backward
+	} else {
+		s.Tail = x.Backward
+	}
+	for s.Level > 1 && s.Head.Level[s.Level-1].Forward == nil {
+		s.Level--
+	}
+	s.Length--
+}
+
+func (s *Skiplist) DeleteData(score float64, obj *Data) bool {
+	var x *SkiplistNode
+	update := make([]*SkiplistNode, SKIPLIST_MAX_LEVEL)
+	x = s.Head
+	for i := s.Level - 1; i >= 0; i-- {
+		for x.Level[i].Forward != nil && (x.Level[i].Forward.Score < score ||
+			(x.Level[i].Forward.Score == score && (*x.Level[i].Forward.Obj).Compare(obj) < 0)) {
+			x = x.Level[i].Forward
+		}
+		update[i] = x
+	}
+	if x != nil && x.Level[0].Forward != nil {
+		x = x.Level[0].Forward
+	}
+	if obj.Compare(x.Obj) != 0 {
+		return false
+	}
+	s.DeleteNode(x, update)
+	return true
+}
+
 func (s *Skiplist) sIsInRange(r *ScoreRange) bool {
 	var x *SkiplistNode
 	if r.Left > r.Right {
@@ -172,5 +214,20 @@ func (s *Skiplist) LastInRange(r *ScoreRange) *SkiplistNode {
 		return x
 	} else {
 		return nil
+	}
+}
+
+func (s *Skiplist) show() {
+	var x *SkiplistNode
+	for i := 0; i < SKIPLIST_MAX_LEVEL; i++ {
+		if s.Head.Level[i].Forward != nil {
+			fmt.Printf("%d: ", i+1)
+			x = s.Head.Level[i].Forward
+			for x != nil {
+				fmt.Printf("%d, step: %d ------->", x.Obj.X, x.Level[i].Span)
+				x = x.Level[i].Forward
+			}
+			fmt.Println()
+		}
 	}
 }

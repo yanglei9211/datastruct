@@ -1,47 +1,75 @@
 package priorityqueue
-
+// 借由自带的heap实现
 import (
 	"container/heap"
+	"fmt"
 )
+
+type PriorityQueue struct {
+	itemQueue ItemListInter
+}
+
+func NewPrioirtyQueue(ilt ItemListInter) PriorityQueue {
+	pq := PriorityQueue{}
+	pq.itemQueue = ilt
+	heap.Init(pq.itemQueue)
+	return pq
+}
+
+func (pq *PriorityQueue) PushItem(it *Item) {
+	//pq.itemQueue.Show()
+	heap.Push(pq.itemQueue, it)
+}
+
+func (pq *PriorityQueue) PopItem() *Item {
+	res := heap.Pop(pq.itemQueue).(*Item)
+	return res
+}
 
 type Item struct {
 	Value interface{}
 	Score float64
-	Index int // 更新的时候用
+	Index int
 }
 
-type PriorityQueue []*Item
+type ItemList []*Item
 
-func (q PriorityQueue) Len() int { return len(q) }
+func (s ItemList) Len() int { return len(s) }
 
-func (q PriorityQueue) Less(i, j int) bool {
-	return q[i].Score > q[j].Score
+func (s ItemList) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+	s[i].Index = i
+	s[j].Index = j
 }
 
-func (q PriorityQueue) Swap(i, j int) {
-	q[i], q[j] = q[j], q[i]
-	q[i].Index = i
-	q[j].Index = j
-}
-
-func (q *PriorityQueue) Push(x interface{}) {
-	n := len(*q)
+func (s *ItemList) Push(x interface{}) {
+	n := len(*s)
 	item := x.(*Item)
-	item.Index = n
-	*q = append(*q, item)
+	(*item).Index = n
+	*s = append(*s, item)
 }
 
-func (q *PriorityQueue) Pop() interface{} {
-	old := *q
+func (s *ItemList) Pop() interface{} {
+	old := *s
 	n := len(old)
 	item := old[n-1]
-	item.Index = -1
-	*q = old[0 : n-1]
+	item.Index = n
+	*s = old[0 : n-1]
 	return item
 }
 
-func (q *PriorityQueue) Update(item *Item, value interface{}, score float64) {
-	item.Value = value
-	item.Score = score
-	heap.Fix(q, item.Index)
+func (s ItemList) Show() {
+	fmt.Println("show:")
+	for i := 0; i < len(s); i++ {
+		fmt.Println(s[i])
+	}
+}
+
+type ItemListInter interface {
+	Len() int
+	Swap(int, int)
+	Push(interface{})
+	Pop() interface{}
+	Less(int, int) bool
+	Show()
 }
