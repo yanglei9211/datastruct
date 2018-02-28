@@ -1,8 +1,10 @@
 package priorityqueue
+
 // 借由自带的heap实现
 import (
-	"container/heap"
 	"fmt"
+
+	"container/heap"
 )
 
 type PriorityQueue struct {
@@ -24,6 +26,15 @@ func (pq *PriorityQueue) PushItem(it *Item) {
 func (pq *PriorityQueue) PopItem() *Item {
 	res := heap.Pop(pq.itemQueue).(*Item)
 	return res
+}
+
+func (pq *PriorityQueue) FrontItem() *Item {
+	res := pq.itemQueue.Front()
+	return res.(*Item)
+}
+
+func (pq *PriorityQueue) Len() int {
+	return pq.itemQueue.Len()
 }
 
 type Item struct {
@@ -65,6 +76,10 @@ func (s ItemList) Show() {
 	}
 }
 
+func (s ItemList) Front() interface{} {
+	return s[0]
+}
+
 type ItemListInter interface {
 	Len() int
 	Swap(int, int)
@@ -72,4 +87,5 @@ type ItemListInter interface {
 	Pop() interface{}
 	Less(int, int) bool
 	Show()
+	Front() interface{}
 }

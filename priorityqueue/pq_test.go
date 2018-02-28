@@ -32,4 +32,8 @@ func Test_pq(t *testing.T) {
 	pq.PushItem(&Item{Score: 1, Value: 1})
 	res := pq.PopItem()
 	fmt.Println(res.Index, res.Value, res.Score)
+	fmt.Println(-1 >> 1)
+	fmt.Println(-1 / 2)
+	fmt.Println(1 / 2)
+	fmt.Println(1 >> 1)
 }
